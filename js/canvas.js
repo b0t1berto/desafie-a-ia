@@ -8,7 +8,9 @@
 (function (global) {
   'use strict';
 
-  var LARGURA_DO_TRACO = 10;
+  // O DoodleNet foi treinado com traços grossos do QuickDraw (~16 px).
+  // Traços muito finos (o default 10 px) baixam a confiança do modelo.
+  var LARGURA_DO_TRACO = 16;
   var COR_DO_TRACO = '#16181d';
   // O fundo é pintado no próprio canvas (não só pelo CSS) para que o estado
   // inicial e o estado depois de limpar() sejam o mesmo bitmap branco.

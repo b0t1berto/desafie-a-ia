@@ -1,5 +1,8 @@
 /**
- * Liga o quadro de desenho aos controles da página.
+ * Liga o quadro de desenho ao classificador DoodleNet.
+ *
+ * Estados possíveis: carregando o modelo, pronto, classificando e erro. Os
+ * botões só liberam quando o modelo está pronto e há tinta no quadro.
  */
 (function () {
   'use strict';
@@ -7,68 +10,148 @@
   var canvas = document.getElementById('drawing-canvas');
   var botaoLimpar = document.getElementById('clear-button');
   var botaoAdivinhar = document.getElementById('guess-button');
-  var areaResultado = document.getElementById('result');
 
-  if (!canvas || !botaoLimpar || !botaoAdivinhar || !areaResultado) {
+  if (!canvas || !botaoLimpar || !botaoAdivinhar) {
     return;
   }
 
-  var MENSAGEM_INICIAL = 'Aguardando um desenho...';
-  // Abaixo deste valor de luminância (0-255) o pixel é considerado traço.
-  // O fundo branco é 255 e o traço é quase preto, então a antialiasing das
-  // bordas fica de fora da contagem.
-  var LIMIAR_DE_TINTA = 160;
-  var CANAIS_POR_PIXEL = 4;
+  var MENSAGEM_ERRO_GENERICA =
+    'Não foi possível analisar o desenho. Tente novamente.';
 
   var quadro = window.QuadroDeDesenho.criar(canvas, {
-    aoMudar: atualizarBotoes
+    aoMudar: function () {
+      desenhoMudou = true;
+      sincronizarControles();
+    }
   });
 
-  function atualizarBotoes() {
-    botaoAdivinhar.disabled = quadro.estaVazio();
+  var modeloPronto = false;
+  var analisando = false;
+  var intervaloClassificacao = null;
+  var desenhoMudou = false;
+  var ultimoResultado = null;
+
+  function sincronizarControles() {
+    botaoAdivinhar.disabled = !modeloPronto || analisando || quadro.estaVazio();
+    botaoLimpar.disabled = analisando;
   }
 
-  function mostrarResultado(mensagem) {
-    areaResultado.innerHTML = '';
+  function descreverErro(erro, padrao) {
+    if (erro && typeof erro.message === 'string' && erro.message.length > 0) {
+      return padrao + ' Detalhe: ' + erro.message;
+    }
+    return padrao;
+  }
 
-    var paragrafo = document.createElement('p');
-    paragrafo.className = 'result__placeholder';
-    paragrafo.textContent = mensagem;
+  function carregarModelo() {
+    window.PainelResultado.mostrarCarregando();
 
-    areaResultado.appendChild(paragrafo);
+    window.ClassificadorDoodle.carregar()
+      .then(function () {
+        modeloPronto = true;
+        window.PainelResultado.mostrarInstrucao();
+      })
+      .catch(function (erro) {
+        modeloPronto = false;
+        window.PainelResultado.mostrarErro(
+          descreverErro(
+            erro,
+            'Não foi possível carregar o modelo DoodleNet. Verifique a conexão e recarregue a página.'
+          )
+        );
+      })
+      .then(function () {
+        sincronizarControles();
+      });
   }
 
   /**
-   * Conta os pixels que receberam tinta. O quadro tem fundo branco opaco, então
-   * não dá para usar o canal alpha: o critério é o quão escuro o pixel ficou.
+   * Recorta e normaliza o desenho antes de classificar: o DoodleNet espera o
+   * rabisco centralizado e ocupando quase todo o quadro, como no QuickDraw.
    */
-  function contarPixelsDesenhados() {
-    var dados = quadro.contexto.getImageData(0, 0, canvas.width, canvas.height).data;
-    var total = 0;
+  function prepararEntrada() {
+    return window.Preprocessamento.normalizar(canvas);
+  }
 
-    for (var i = 0; i < dados.length; i += CANAIS_POR_PIXEL) {
-      var luminancia = (dados[i] + dados[i + 1] + dados[i + 2]) / 3;
-      if (luminancia < LIMIAR_DE_TINTA) {
-        total += 1;
+  function resultadoIgual(a, b) {
+    if (!a || !b || a.length !== b.length) {
+      return false;
+    }
+    for (var i = 0; i < a.length; i += 1) {
+      if (a[i].rotulo !== b[i].rotulo || a[i].confianca !== b[i].confianca) {
+        return false;
       }
     }
+    return true;
+  }
 
-    return total;
+  function adivinhar() {
+    if (!modeloPronto || analisando || quadro.estaVazio()) {
+      return;
+    }
+
+    // Só classificar se o desenho mudou desde a última classificação.
+    if (!desenhoMudou) {
+      return;
+    }
+    desenhoMudou = false;
+
+    var entrada = prepararEntrada();
+    if (!entrada) {
+      window.PainelResultado.mostrarInstrucao();
+      return;
+    }
+
+    analisando = true;
+    window.PainelResultado.mostrarClassificando();
+    sincronizarControles();
+
+    window.ClassificadorDoodle.classificar(entrada)
+      .then(function (palpites) {
+        // Só atualiza o DOM se o resultado realmente mudou, evitando
+        // recriar elementos e fazer a página "voltar para cima".
+        if (!resultadoIgual(palpites, ultimoResultado)) {
+          ultimoResultado = palpites;
+          window.PainelResultado.mostrarPalpites(palpites);
+        }
+      })
+      .catch(function (erro) {
+        window.PainelResultado.mostrarErro(
+          descreverErro(erro, MENSAGEM_ERRO_GENERICA)
+        );
+      })
+      .then(function () {
+        analisando = false;
+        sincronizarControles();
+      });
   }
 
   botaoLimpar.addEventListener('click', function () {
     quadro.limpar();
-    mostrarResultado(MENSAGEM_INICIAL);
+    if (modeloPronto) {
+      window.PainelResultado.mostrarInstrucao();
+    }
   });
 
-  botaoAdivinhar.addEventListener('click', function () {
-    if (quadro.estaVazio()) {
+  botaoAdivinhar.addEventListener('click', adivinhar);
+
+  // Atalho de teclado: Enter confirma o desenho, como em qualquer formulário.
+  document.addEventListener('keydown', function (evento) {
+    if (evento.key !== 'Enter' || evento.target === botaoAdivinhar) {
       return;
     }
-
-    var pixels = contarPixelsDesenhados();
-    mostrarResultado('Desenho capturado: ' + pixels + ' pixels traçados.');
+    if (botaoAdivinhar.disabled) {
+      return;
+    }
+    adivinhar();
   });
 
-  atualizarBotoes();
+  sincronizarControles();
+  carregarModelo();
+
+  // Classificação em tempo real: tenta classificar a cada 500 ms enquanto houver
+  // tinta no quadro, o modelo estiver pronto e não estiver classificando no momento.
+  intervaloClassificacao = setInterval(function () {
+    adivinhar();
+  }, 500);
 })();

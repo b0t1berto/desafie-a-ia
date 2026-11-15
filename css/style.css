@@ -143,3 +143,96 @@ body {
   color: var(--color-ink-soft);
   font-size: 0.9375rem;
 }
+.result__titulo {
+  margin: 0 0 var(--space-sm);
+  color: var(--color-ink-soft);
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.result__nota {
+  margin: var(--space-sm) 0 0;
+  color: var(--color-ink-soft);
+  font-size: 0.8125rem;
+}
+
+.result__principal {
+  margin: 0 0 var(--space-sm);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.result__restantes {
+  margin: 0 0 var(--space-sm);
+  color: var(--color-ink-soft);
+  font-size: 0.9375rem;
+}
+
+.result__erro {
+  margin: 0;
+  color: #b42318;
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
+}
+
+.palpites {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.palpite__linha {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.palpite__rotulo {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.palpite--principal .palpite__rotulo {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.palpite__valor {
+  flex: none;
+  color: var(--color-ink-soft);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.palpite--principal .palpite__valor {
+  color: var(--color-primary);
+  font-weight: 650;
+}
+
+.barra {
+  height: 6px;
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background-color: #eceef3;
+}
+
+.barra__preenchimento {
+  height: 100%;
+  border-radius: inherit;
+  background-color: #c2c7d3;
+  transition: width 220ms ease;
+}
+
+.palpite--principal .barra__preenchimento {
+  background-color: var(--color-primary);
+}
