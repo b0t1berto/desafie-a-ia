@@ -2,6 +2,8 @@
 
 Reconhecimento de desenhos em tempo real com o modelo **DoodleNet** (ml5.js), focado no **Modo Jogo**: a IA sorteia uma palavra e você tem 20 segundos para desenhá-la. Ganha ponto se a IA acertar o que você desenhou antes do tempo acabar.
 
+🎮 **Jogue online:** https://b0t1berto.github.io/desafie-a-ia/
+
 ---
 
 ## O que é
