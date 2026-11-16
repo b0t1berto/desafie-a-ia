@@ -7,7 +7,6 @@
   'use strict';
 
   var canvas = document.getElementById('drawing-canvas');
-  var botaoAdivinhar = document.getElementById('guess-button');
   var botaoLimpar = document.getElementById('clear-button');
   var resultado = document.getElementById('result');
   var log = document.getElementById('log');
@@ -113,13 +112,10 @@
         if (textoDoResultado().indexOf('Modelo pronto') !== 0) {
           throw new Error('o painel nao indica modelo pronto');
         }
-        if (!botaoAdivinhar.disabled) {
-          throw new Error('botao Adivinhar deveria estar desabilitado sem tinta');
-        }
-        registrar('botao desabilitado com quadro vazio: ok');
+        registrar('modelo pronto: ok');
 
         CASA.forEach(tracar);
-        registrar('desenho aplicado; botao habilitado: ' + !botaoAdivinhar.disabled);
+        registrar('desenho aplicado');
 
         var dados = canvas
           .getContext('2d')
@@ -134,7 +130,8 @@
         var entrada = window.Preprocessamento.normalizar(canvas);
         registrar('canvas normalizado: ' + (entrada ? entrada.width + 'x' + entrada.height : 'null'));
 
-        botaoAdivinhar.click();
+        // A classificacao eh disparada automaticamente pelo app (setInterval),
+        // nao eh necessario clicar em botao algum.
 
         return esperar(
           function () {
@@ -159,9 +156,6 @@
           'o painel limpar'
         ).then(function () {
           registrar('apos limpar: ' + textoDoResultado());
-          if (!botaoAdivinhar.disabled) {
-            throw new Error('botao deveria voltar a desabilitar apos limpar');
-          }
           document.title = 'TESTE OK — ' + (palpites[0] || 'sem palpite');
         });
       })

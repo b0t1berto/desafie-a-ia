@@ -3,18 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Desafio IA — Reconhecimento de Desenhos</title>
+  <title>Desafio IA — Modo Jogo</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <main class="app">
-    <header class="app__header">
-      <h1 class="app__title">Desenhe e a IA adivinha</h1>
-      <p class="app__subtitle">
-        Rabisque qualquer coisa — gato, casa, bicicleta, guarda-chuva — e o
-        modelo DoodleNet tenta reconhecer entre 345 categorias.
-      </p>
-    </header>
+
 
     <section class="drawing" aria-label="Área de desenho">
       <canvas
@@ -31,16 +25,33 @@
       <button id="clear-button" class="button button--secondary" type="button">
         Limpar
       </button>
-      <button id="guess-button" class="button button--primary" type="button">
-        Adivinhar
-      </button>
+    </section>
+
+    <section id="jogo" class="jogo" aria-label="Modo jogo">
+      <div class="jogo__header">
+        <h1 class="jogo__titulo">Modo Jogo</h1>
+        <span class="jogo__placar">
+          Pontos: <span id="jogo-pontos">0</span> &bull;
+          Recorde: <span id="jogo-recorde">0</span>
+        </span>
+      </div>
+      <div class="jogo__controles">
+        <button id="jogo-iniciar" class="button button--primary" type="button">
+          Iniciar jogo
+        </button>
+      </div>
+      <p class="jogo__palavra" id="jogo-palavra"></p>
+      <p class="jogo__tempo" id="jogo-tempo"></p>
+      <p class="jogo__palpite-ia" id="jogo-palpite-ia"></p>
+      <p class="jogo__feedback" id="jogo-feedback"></p>
     </section>
 
     <section
       id="result"
       class="result"
       role="status"
-      aria-live="polite">
+      aria-live="polite"
+      hidden>
       <p class="result__placeholder">Carregando IA...</p>
     </section>
   </main>
@@ -50,6 +61,7 @@
   <script defer src="js/preprocessamento.js"></script>
   <script defer src="js/classificador.js"></script>
   <script defer src="js/resultado.js"></script>
+  <script defer src="js/jogo.js"></script>
   <script defer src="js/app.js"></script>
 </body>
 </html>

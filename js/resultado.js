@@ -101,12 +101,27 @@
 
     var preenchimento = document.createElement('div');
     preenchimento.className = 'barra__preenchimento';
-    // Mínimo visível para palpites muito baixos não sumirem por completo.
-    preenchimento.style.width = Math.max(palpite.confianca * 100, 2) + '%';
 
     barra.appendChild(preenchimento);
     item.appendChild(linha);
     item.appendChild(barra);
+
+    // Largura final da barra (mínimo visível para palpites muito baixos).
+    var larguraFinal = Math.max(palpite.confianca * 100, 2) + '%';
+
+    // Respeita redução de movimento: a barra aparece já no valor final.
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      preenchimento.style.width = larguraFinal;
+      return item;
+    }
+
+    // Começa vazia para que a transição de width anime o preenchimento.
+    preenchimento.style.width = '0%';
+    requestAnimationFrame(function () {
+      if (preenchimento.isConnected) {
+        preenchimento.style.width = larguraFinal;
+      }
+    });
 
     return item;
   }

@@ -1,17 +1,17 @@
 /**
  * Liga o quadro de desenho ao classificador DoodleNet.
  *
- * Estados possíveis: carregando o modelo, pronto, classificando e erro. Os
- * botões só liberam quando o modelo está pronto e há tinta no quadro.
+ * Estados possíveis: carregando o modelo, pronto, classificando e erro. A
+ * classificacao acontece automaticamente a cada 500 ms enquanto houver tinta
+ * no quadro; o unico botoeira restante e o de limpar o quadro.
  */
 (function () {
   'use strict';
 
   var canvas = document.getElementById('drawing-canvas');
   var botaoLimpar = document.getElementById('clear-button');
-  var botaoAdivinhar = document.getElementById('guess-button');
 
-  if (!canvas || !botaoLimpar || !botaoAdivinhar) {
+  if (!canvas || !botaoLimpar) {
     return;
   }
 
@@ -25,6 +25,11 @@
     }
   });
 
+  // Expõe o quadro para que o modo jogo possa limpar o canvas a cada rodada.
+  if (window.Jogo && typeof window.Jogo.setQuadro === 'function') {
+    window.Jogo.setQuadro(quadro);
+  }
+
   var modeloPronto = false;
   var analisando = false;
   var intervaloClassificacao = null;
@@ -32,7 +37,6 @@
   var ultimoResultado = null;
 
   function sincronizarControles() {
-    botaoAdivinhar.disabled = !modeloPronto || analisando || quadro.estaVazio();
     botaoLimpar.disabled = analisando;
   }
 
@@ -86,7 +90,7 @@
   }
 
   function adivinhar() {
-    if (!modeloPronto || analisando || quadro.estaVazio()) {
+    if (!modeloPronto || analisando) {
       return;
     }
 
@@ -108,6 +112,15 @@
 
     window.ClassificadorDoodle.classificar(entrada)
       .then(function (palpites) {
+        // No modo jogo, o proprio modulo Jogo exibe o palpite da IA.
+        // Fora do jogo, atualiza o painel de resultado com as barras.
+        if (window.Jogo && window.Jogo.estaAtivo()) {
+          if (typeof window.Jogo.aoReceberPalpites === 'function') {
+            window.Jogo.aoReceberPalpites(palpites);
+          }
+          return;
+        }
+
         // Só atualiza o DOM se o resultado realmente mudou, evitando
         // recriar elementos e fazer a página "voltar para cima".
         if (!resultadoIgual(palpites, ultimoResultado)) {
@@ -131,19 +144,6 @@
     if (modeloPronto) {
       window.PainelResultado.mostrarInstrucao();
     }
-  });
-
-  botaoAdivinhar.addEventListener('click', adivinhar);
-
-  // Atalho de teclado: Enter confirma o desenho, como em qualquer formulário.
-  document.addEventListener('keydown', function (evento) {
-    if (evento.key !== 'Enter' || evento.target === botaoAdivinhar) {
-      return;
-    }
-    if (botaoAdivinhar.disabled) {
-      return;
-    }
-    adivinhar();
   });
 
   sincronizarControles();
