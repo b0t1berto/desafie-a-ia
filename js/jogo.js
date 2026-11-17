@@ -188,6 +188,10 @@
     if (quadro && quadro.contexto && quadro.contexto.canvas) {
       quadro.contexto.canvas.classList.remove('canvas--acerto');
     }
+    var secaoDesenho = document.querySelector('.drawing');
+    if (secaoDesenho) {
+      secaoDesenho.classList.remove('drawing--acerto');
+    }
 
     // Limpa o quadro para a nova tentativa, se o app forneceu a referencia.
     if (quadro && typeof quadro.limpar === 'function') {
@@ -275,6 +279,11 @@
       if (quadro && quadro.contexto && quadro.contexto.canvas) {
         quadro.contexto.canvas.classList.add('canvas--acerto');
       }
+      // Faz a area de desenho piscar tambem, para nao passar despercebido.
+      var secaoDesenho = document.querySelector('.drawing');
+      if (secaoDesenho) {
+        secaoDesenho.classList.add('drawing--acerto');
+      }
       // Mantem a mensagem de acerto visivel ate o usuario iniciar a proxima rodada.
     } else {
       if (feedbackEl) {
@@ -288,6 +297,10 @@
         limparFeedback();
         if (quadro && quadro.contexto && quadro.contexto.canvas) {
           quadro.contexto.canvas.classList.remove('canvas--acerto');
+        }
+        var secaoDesenho = document.querySelector('.drawing');
+        if (secaoDesenho) {
+          secaoDesenho.classList.remove('drawing--acerto');
         }
         if (botaoIniciar) {
           botaoIniciar.textContent = 'Nova palavra';
