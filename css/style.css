@@ -320,10 +320,55 @@ body:not(.jogo-ativo) .drawing {
   min-height: 1.2em;
 }
 
+/* Feedback de acerto: muito mais evidente para ficar claro que a IA acertou o desenho. */
 .jogo__feedback--acerto {
-  color: #15803d;
+  color: #ffffff;
+  background-color: #15803d;
+  border: 1px solid #14532d;
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  min-height: auto;
+  box-shadow: 0 2px 8px color-mix(in srgb, #15803d 35%, transparent);
+  animation: jogoAcertoEntrada 450ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.jogo__feedback--acerto::before {
+  content: '✔ ';
+  margin-right: 6px;
+}
+
+@keyframes jogoAcertoEntrada {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .jogo__feedback--erro {
   color: #b42318;
+}
+
+/* Destaque no quadro quando a IA reconhece o desenho corretamente. */
+.canvas--acerto {
+  border-color: #15803d;
+  box-shadow: 0 0 0 4px color-mix(in srgb, #15803d 25%),
+    0 0 20px color-mix(in srgb, #15803d 18%);
+  animation: canvasAcerto 700ms ease;
+}
+
+@keyframes canvasAcerto {
+  0% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, #15803d 55%);
+  }
+  100% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, #15803d 25%),
+      0 0 20px color-mix(in srgb, #15803d 18%);
+  }
 }

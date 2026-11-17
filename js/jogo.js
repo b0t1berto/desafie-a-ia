@@ -11,6 +11,7 @@
   'use strict';
 
   var TEMPO_LIMITE_SEGUNDOS = 20;
+  var LIMITE_DESENHOS_POR_PARTIDA = 5;
 
   // rotulo em ingles eh o que o DoodleNet devolve (vocabulario QuickDraw);
   // portugues eh para exibicao. Nomes conferidos com as categorias oficiais
@@ -66,6 +67,7 @@
     categoriaAtual: null,
     pontos: 0,
     recorde: 0,
+    desenhosFeitos: 0,
     tempoRestante: TEMPO_LIMITE_SEGUNDOS,
     temporizador: null,
     tempoEsgotado: false
@@ -167,14 +169,25 @@
       return;
     }
 
+    // Limite de desenhos por partida atingido: encerra a partida.
+    if (estado.desenhosFeitos >= LIMITE_DESENHOS_POR_PARTIDA) {
+      encerrarPartida();
+      return;
+    }
+
     pararTemporizador();
     estado.categoriaAtual = sortearCategoria();
     estado.tempoRestante = TEMPO_LIMITE_SEGUNDOS;
     estado.tempoEsgotado = false;
 
+    estado.desenhosFeitos += 1;
+
     palavraEl.textContent = 'Desenhe uma: ' + estado.categoriaAtual.portugues;
     tempoEl.textContent = estado.tempoRestante + 's';
     limparFeedback();
+    if (quadro && quadro.contexto && quadro.contexto.canvas) {
+      quadro.contexto.canvas.classList.remove('canvas--acerto');
+    }
 
     // Limpa o quadro para a nova tentativa, se o app forneceu a referencia.
     if (quadro && typeof quadro.limpar === 'function') {
@@ -195,6 +208,7 @@
     if (!estado.ativo) {
       estado.ativo = true;
       estado.pontos = 0;
+      estado.desenhosFeitos = 0;
       estado.tempoEsgotado = false;
       atualizarPlacar();
     }
@@ -251,8 +265,15 @@
       estado.pontos += 1;
       atualizarPlacar();
       if (feedbackEl) {
-        feedbackEl.textContent = 'Acertou! Voce ganhou um ponto.';
+        feedbackEl.textContent =
+          'Acertou! A IA reconheceu o seu desenho como: ' +
+          estado.categoriaAtual.portugues +
+          '. Voce ganhou um ponto.';
         feedbackEl.className = 'jogo__feedback jogo__feedback--acerto';
+      }
+      // Destaca o quadro desenhado para ficar claro que a IA acertou.
+      if (quadro && quadro.contexto && quadro.contexto.canvas) {
+        quadro.contexto.canvas.classList.add('canvas--acerto');
       }
       // Mantem a mensagem de acerto visivel ate o usuario iniciar a proxima rodada.
     } else {
@@ -265,11 +286,42 @@
       setTimeout(function () {
         estado.tempoEsgotado = false;
         limparFeedback();
+        if (quadro && quadro.contexto && quadro.contexto.canvas) {
+          quadro.contexto.canvas.classList.remove('canvas--acerto');
+        }
         if (botaoIniciar) {
           botaoIniciar.textContent = 'Nova palavra';
           botaoIniciar.className = 'button button--secondary';
         }
       }, 2000);
+    }
+  }
+
+  /**
+   * Encerra a partida quando o limite de desenhos e atingido. Desativa o jogo,
+   * esconde o quadro, mostra o placar final e deixa o botao pronto para uma
+   * nova partida.
+   */
+  function encerrarPartida() {
+    pararTemporizador();
+    estado.ativo = false;
+    estado.tempoEsgotado = true;
+
+    document.body.classList.remove('jogo-ativo');
+
+    if (feedbackEl) {
+      feedbackEl.textContent =
+        'Fim de partida! Voce fez ' +
+        estado.pontos +
+        ' ponto' +
+        (estado.pontos !== 1 ? 's' : '') +
+        '.';
+      feedbackEl.className = 'jogo__feedback';
+    }
+
+    if (botaoIniciar) {
+      botaoIniciar.textContent = 'Jogar novamente';
+      botaoIniciar.className = 'button button--primary';
     }
   }
 
