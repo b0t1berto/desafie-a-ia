@@ -274,6 +274,8 @@
           estado.categoriaAtual.portugues +
           '. Voce ganhou um ponto.';
         feedbackEl.className = 'jogo__feedback jogo__feedback--acerto';
+        // Traz a mensagem de acerto para o topo da tela, sem precisar arrastar.
+        feedbackEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
       // Destaca o quadro desenhado para ficar claro que a IA acertou.
       if (quadro && quadro.contexto && quadro.contexto.canvas) {
