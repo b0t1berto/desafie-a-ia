@@ -357,20 +357,22 @@ body:not(.jogo-ativo) .drawing {
 
 /* Destaque no quadro quando a IA reconhece o desenho corretamente. */
 .canvas--acerto {
-  border: 20px solid #15803d;
-  box-shadow: 0 0 0 12px color-mix(in srgb, #15803d 35%),
-    0 0 40px color-mix(in srgb, #15803d 28%);
-  animation: canvasAcerto 600ms ease-in-out alternate infinite;
+  border: 30px solid #16a34a;
+  outline: 8px solid #ffffff;
+  outline-offset: -4px;
+  box-shadow: 0 0 0 0 #16a34a;
+  animation: canvasAcertoFlash 500ms ease-in-out infinite;
   border-radius: var(--radius-md);
 }
 
-@keyframes canvasAcerto {
-  0% {
-    box-shadow: 0 0 0 12px color-mix(in srgb, #15803d 35%),
-      0 0 40px color-mix(in srgb, #15803d 28%);
-  }
+@keyframes canvasAcertoFlash {
+  0%,
   100% {
-    box-shadow: 0 0 0 12px color-mix(in srgb, #15803d 70%),
-      0 0 60px color-mix(in srgb, #15803d 45%);
+    border-color: #16a34a;
+    box-shadow: 0 0 0 0 #16a34a;
+  }
+  50% {
+    border-color: #ffffff;
+    box-shadow: 0 0 0 16px color-mix(in srgb, #16a34a 50%);
   }
 }
